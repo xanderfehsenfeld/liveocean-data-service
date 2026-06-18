@@ -13,3 +13,6 @@ Java Spring.
 ## Helpful resources
 
 https://www.baeldung.com/java-geospatial-applications#2-geospatial-standards-ogc-geoapi
+https://www.mongodb.com/docs/manual/geospatial-queries/
+https://faculty.washington.edu/pmacc/LO/tracks2_PS.html
+
