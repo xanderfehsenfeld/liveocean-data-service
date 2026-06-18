@@ -19,3 +19,4 @@ Java Spring.
 - [OSGeo GeoTools Java Library](https://www.osgeo.org/projects/geotools/)
 - [PostGIS](https://postgis.net/)
 - [Article able webGIS](https://www.lifeingis.com/most-popular-framework-for-back-end-webgis-development/)
+- [Top Web Frameworks for WebGIS Development: Organized by Context](https://tierrainsights.buzz/top-web-frameworks-for-webgis-development-organized-by-context-a4547e8fafc4)
