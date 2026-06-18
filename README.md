@@ -16,5 +16,5 @@ Java Spring.
 * https://www.mongodb.com/docs/manual/geospatial-queries/
 * https://faculty.washington.edu/pmacc/LO/tracks2_PS.html
 * https://medium.com/@emmanuelirekponor86/bridging-the-gap-combining-geography-with-web-development-full-stack-a-powerful-combination-for-01af6f2e7632
-* [https://www.osgeo.org/projects/geotools/](OSGeo GeoTools Java Library)
+* [OSGeo GeoTools Java Library](https://www.osgeo.org/projects/geotools/)
 
