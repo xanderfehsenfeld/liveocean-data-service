@@ -165,7 +165,7 @@ class DrifterSnapshot(models.Model):
     def from_feature_collection(
         cls, time_index: int, fc: FeatureCollection, time: str,
 
-        forecast_id: models.ForeignKey[LiveOceanDrifterForecast]
+        forecast: models.ForeignKey[LiveOceanDrifterForecast]
     ) -> "DrifterSnapshot":
         """Build (but do not save) a DrifterSnapshot from a FeatureCollection."""
         geos_points = [
@@ -175,7 +175,7 @@ class DrifterSnapshot(models.Model):
         ]
 
         return cls(
-            forecast_id=forecast_id,
+            forecast_id=forecast,
             time_index=time_index,
             locations=MultiPoint(*geos_points, srid=4326),
             drifter_ids=[f.properties.id for f in fc.features],

@@ -8,10 +8,6 @@ import requests
 from django.contrib.gis.db import models
 
 
-# ---------------------------------------------------------------------------
-# Core logic  (direct translation of getPoints)
-# ---------------------------------------------------------------------------
-
 def get_points(tracks: list[Track]) -> list[FeatureCollection]:
     """
     For every time-step index, build a FeatureCollection that contains one
@@ -54,11 +50,7 @@ def get_points(tracks: list[Track]) -> list[FeatureCollection]:
 # Example: bulk-create snapshots from raw track data
 # ---------------------------------------------------------------------------
 
-
-def save_snapshots(tracks: list[Track], times: list[str],
-
-
-                   forecast_id:  LiveOceanDrifterForecast) -> list[DrifterSnapshot]:
+def save_snapshots(forecast:  LiveOceanDrifterForecast) -> list[DrifterSnapshot]:
     """
     Convert raw Track data all the way to persisted DrifterSnapshot rows.
 
@@ -67,10 +59,17 @@ def save_snapshots(tracks: list[Track], times: list[str],
         tracks = [Track(x=[...], y=[...]), ...]
         snapshots = save_snapshots(tracks)
     """
-    feature_collections = get_points(tracks)
+
+    list_of_tracks: list[Track] = []
+    for track in forecast.drifters_forecast:
+        list_of_tracks.append(Track(x=track["x"], y=track["y"]))
+
+    times = forecast.times
+
+    feature_collections = get_points(list_of_tracks)
     snapshots = [
         DrifterSnapshot.from_feature_collection(
-            time_index=i,  fc=fc, time=times[i], forecast_id=forecast_id)
+            time_index=i,  fc=fc, time=times[0]["t"][i], forecast=forecast)
         for i, fc in enumerate(feature_collections)
     ]
     return DrifterSnapshot.objects.bulk_create(snapshots)
@@ -96,7 +95,6 @@ def forecast_drifters(request, tracks_filename, times_filename):
             drifters_forecast=drifters_forecast,
             date_of_query=current_date,
             times=times,
-
             name="{}, {} for {}".format(
                 tracks_filename, times_filename, current_date),
             tracks_filename=tracks_filename,

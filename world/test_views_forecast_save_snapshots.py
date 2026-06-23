@@ -50,18 +50,13 @@ class SaveSnapshotsTests(TestCase):
         correctly processes the json object of a tracks response
         """
 
-        list_of_tracks: list[Track] = []
-
-        for track in expected_tracks_response:
-            list_of_tracks.append(Track(x=track["x"], y=track["y"]))
-
-        self.assertIs(LiveOceanDrifterForecast.objects.all().count(), 1)
-
         drifter_forecast: LiveOceanDrifterForecast = LiveOceanDrifterForecast.objects.first()
+
+        drifter_forecast.times = expected_times_response
+        drifter_forecast.drifters_forecast = expected_tracks_response
+
         save_snapshots(
-            tracks=list_of_tracks,
-            times=expected_times_response[0]["t"],
-            forecast_id=drifter_forecast
+            drifter_forecast
         )
 
         count = DrifterSnapshot.objects.all().count()
