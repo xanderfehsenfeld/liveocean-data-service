@@ -69,34 +69,32 @@ import requests
 #     return JsonResponse(data)
 
 
-
-def forecast_drifters(request):
-
+def forecast_drifters(request, tracks_filename, times_filename):
 
     current_date = datetime.now().date()
 
-    result = LiveOceanDrifterForecast.objects.filter(date_of_query=current_date).first()
+    result = LiveOceanDrifterForecast.objects.filter(
+        date_of_query=current_date,
+
+        tracks_filename=tracks_filename).first()
 
     if (result is None):
-        ## make http get request to get drifter data
+        # make http get request to get drifter data
 
-        tracks = "PS_tracks.json"
-        times = "PS_times.json"
-        base_url =   "https://s3.kopah.uw.edu/liveocean-web/{}"
-        drifters_forecast = requests.get(base_url.format(tracks),).json()
-        times =  requests.get(base_url.format(times),).json()
+        base_url = "https://s3.kopah.uw.edu/liveocean-web/{}"
+        drifters_forecast = requests.get(
+            base_url.format(tracks_filename),).json()
+        times = requests.get(base_url.format(times_filename)).json()
         result = LiveOceanDrifterForecast(
-            drifters_forecast=drifters_forecast, 
-            date_of_query=current_date,                            
+            drifters_forecast=drifters_forecast,
+            date_of_query=current_date,
             times=times,
-            name="Drifter forecast for {}".format(current_date)
-            )
-        
+
+            name="{}, {} for {}".format(
+                tracks_filename, times_filename, current_date),
+            tracks_filename=tracks_filename,
+        )
+
         result.save()
 
-    return JsonResponse(result.toJSON(),safe=False)
-
-
-
-
-
+    return JsonResponse(result.toJSON(), safe=False)
