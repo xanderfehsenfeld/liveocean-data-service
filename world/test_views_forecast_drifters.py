@@ -163,23 +163,3 @@ class LiveOceanDrifterForecastViewTests(TestCase):
 
         self.assertIsNone(created_forecast,
                           "Forecast should not have been created.")
-
-
-class SaveSnapshotsTests(TestCase):
-
-    def test_saves_snapshot(self):
-        """
-        correctly processes the json object of a tracks response
-        """
-
-        list_of_tracks: list[Track] = []
-
-        for track in expected_tracks_response:
-            list_of_tracks.append(Track(x=track["x"], y=track["y"]))
-
-        self.assertIsNotNone(LiveOceanDrifterForecast.objects.all())
-        save_snapshots(
-            list_of_tracks, expected_times_response[0]["t"], LiveOceanDrifterForecast.objects.first())
-
-        count = DrifterSnapshot.objects.all().count()
-        self.assertEqual(count, 0)

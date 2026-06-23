@@ -55,7 +55,10 @@ def get_points(tracks: list[Track]) -> list[FeatureCollection]:
 # ---------------------------------------------------------------------------
 
 
-def save_snapshots(tracks: list[Track], times: list[str], forecast_id:  models.ForeignKey[LiveOceanDrifterForecast]) -> list[DrifterSnapshot]:
+def save_snapshots(tracks: list[Track], times: list[str],
+
+
+                   forecast_id:  LiveOceanDrifterForecast) -> list[DrifterSnapshot]:
     """
     Convert raw Track data all the way to persisted DrifterSnapshot rows.
 
@@ -66,7 +69,8 @@ def save_snapshots(tracks: list[Track], times: list[str], forecast_id:  models.F
     """
     feature_collections = get_points(tracks)
     snapshots = [
-        DrifterSnapshot.from_feature_collection(i, fc, times[i])
+        DrifterSnapshot.from_feature_collection(
+            time_index=i,  fc=fc, time=times[i], forecast_id=forecast_id)
         for i, fc in enumerate(feature_collections)
     ]
     return DrifterSnapshot.objects.bulk_create(snapshots)
