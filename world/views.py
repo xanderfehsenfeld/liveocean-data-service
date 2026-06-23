@@ -4,7 +4,7 @@ from django.http import JsonResponse, HttpResponse, Http404
 from django.core.serializers import serialize
 from django.shortcuts import get_object_or_404
 from .models import LiveOceanDrifterForecast
-
+import requests
 
 # def worldborder_list(request):
 #     """List WorldBorder objects.
@@ -69,20 +69,32 @@ from .models import LiveOceanDrifterForecast
 #     return JsonResponse(data)
 
 
-
-def forecast_drifters(request):
-
+def forecast_drifters(request, tracks_filename, times_filename):
 
     current_date = datetime.now().date()
 
-    result = LiveOceanDrifterForecast.objects.filter(date_of_query=current_date).first()
+    result = LiveOceanDrifterForecast.objects.filter(
+        date_of_query=current_date,
+
+        tracks_filename=tracks_filename).first()
 
     if (result is None):
-        ## make http get request to get drifter data
-    else:
-        return JsonResponse(result)
+        # make http get request to get drifter data
 
+        base_url = "https://s3.kopah.uw.edu/liveocean-web/{}"
+        drifters_forecast = requests.get(
+            base_url.format(tracks_filename),).json()
+        times = requests.get(base_url.format(times_filename)).json()
+        result = LiveOceanDrifterForecast(
+            drifters_forecast=drifters_forecast,
+            date_of_query=current_date,
+            times=times,
 
+            name="{}, {} for {}".format(
+                tracks_filename, times_filename, current_date),
+            tracks_filename=tracks_filename,
+        )
 
+        result.save()
 
-
+    return JsonResponse(result.toJSON(), safe=False)

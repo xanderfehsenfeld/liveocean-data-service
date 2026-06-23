@@ -1,4 +1,5 @@
 from django.contrib.gis.db import models
+from django.forms.models import model_to_dict
 
 
 class WorldBorder(models.Model):
@@ -22,20 +23,23 @@ class WorldBorder(models.Model):
     # Returns the string representation of the model.
     def __str__(self):
         return self.name
-    
+
 
 class LiveOceanDrifterForecast(models.Model):
     name = models.CharField(max_length=50, primary_key=True)
     date_of_query = models.DateField("Date of query")
-    drifterData = models.JSONField("JSON Response")
+    drifters_forecast = models.JSONField("JSON Response")
+    tracks_filename = models.CharField("Tracks file name", max_length=50)
+
     times = models.JSONField("Times")
+
+    def toJSON(self):
+        return model_to_dict(self)
 
 
 class Drifter(models.Model):
     location = models.PointField("location")
-    forecast = models.ForeignKey(LiveOceanDrifterForecast, on_delete=models.CASCADE)
+    forecast = models.ForeignKey(
+        LiveOceanDrifterForecast, on_delete=models.CASCADE)
     timestamp = models.TimeField("Time")
     drifter_id = models.IntegerField("ID within forecast")
-
-
-    
