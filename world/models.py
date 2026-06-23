@@ -22,3 +22,20 @@ class WorldBorder(models.Model):
     # Returns the string representation of the model.
     def __str__(self):
         return self.name
+    
+
+class LiveOceanDrifterForecast(models.Model):
+    name = models.CharField(max_length=50, primary_key=True)
+    date_of_query = models.DateField("Date of query")
+    drifterData = models.JSONField("JSON Response")
+    times = models.JSONField("Times")
+
+
+class Drifter(models.Model):
+    location = models.PointField("location")
+    forecast = models.ForeignKey(LiveOceanDrifterForecast, on_delete=models.CASCADE)
+    timestamp = models.TimeField("Time")
+    drifter_id = models.IntegerField("ID within forecast")
+
+
+    
