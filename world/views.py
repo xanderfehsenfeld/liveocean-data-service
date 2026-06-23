@@ -72,7 +72,16 @@ def save_snapshots(forecast:  LiveOceanDrifterForecast) -> list[DrifterSnapshot]
             time_index=i,  fc=fc, time=times[0]["t"][i], forecast=forecast)
         for i, fc in enumerate(feature_collections)
     ]
-    return DrifterSnapshot.objects.bulk_create(snapshots)
+
+    return DrifterSnapshot.objects.bulk_create(snapshots,
+                                               update_conflicts=True,
+                                               update_fields=[
+                                                   "drifter_ids",  "locations", "time"],
+
+                                               unique_fields=[
+                                                   "time_index", "forecast_id"]
+
+                                               )
 
 
 def forecast_drifters(request, tracks_filename, times_filename):

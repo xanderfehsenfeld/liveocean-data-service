@@ -43,20 +43,34 @@ class SaveSnapshotsTests(TestCase):
     fixtures = ["one-forecast.json"]
 
     def setUp(self):
-        print("set up")
+        self.drifter_forecast: LiveOceanDrifterForecast = LiveOceanDrifterForecast.objects.first()
+
+        self.drifter_forecast.times = expected_times_response
+        self.drifter_forecast.drifters_forecast = expected_tracks_response
 
     def test_saves_snapshot(self):
         """
         correctly processes the json object of a tracks response
         """
 
-        drifter_forecast: LiveOceanDrifterForecast = LiveOceanDrifterForecast.objects.first()
+        save_snapshots(
+            self.drifter_forecast
+        )
 
-        drifter_forecast.times = expected_times_response
-        drifter_forecast.drifters_forecast = expected_tracks_response
+        count = DrifterSnapshot.objects.all().count()
+        self.assertEqual(count, 1)
+
+    def test_is_idempotent(self):
+        """
+        Is idempotent - calls method twice with same parameters
+        """
 
         save_snapshots(
-            drifter_forecast
+            self.drifter_forecast
+        )
+
+        save_snapshots(
+            self.drifter_forecast
         )
 
         count = DrifterSnapshot.objects.all().count()
