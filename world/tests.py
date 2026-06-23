@@ -7,12 +7,39 @@ from django.test import SimpleTestCase, Client, TestCase
 from datetime import datetime
 from unittest import mock
 
-from .models import LiveOceanDrifterForecast
+from world.views import save_snapshots
+
+from .models import DrifterSnapshot, LiveOceanDrifterForecast, Track
 
 import mock
 
 
-class LiveOceanDrifterForecastModelTests(TestCase):
+expected_times_response = [
+    {
+        "t": [
+            "06/22/2026 - 05PM PDT"
+
+        ]
+    }
+]
+
+
+expected_tracks_response = [
+
+    {
+        "x": [
+            "-122.786"
+
+        ],
+        "y": [
+            "49.000"
+
+        ]
+    }
+]
+
+
+class LiveOceanDrifterForecastViewTests(TestCase):
 
     fixtures = ["one-forecast.json"]
     times_file = "PS_times.json"
@@ -26,15 +53,6 @@ class LiveOceanDrifterForecastModelTests(TestCase):
         # Configure mocked responses from upstream endpoint
         upstream_endpoint = "https://s3.kopah.uw.edu/liveocean-web/{}"
 
-        expected_times_response = [
-            {
-                "t": [
-                    "06/22/2026 - 05PM PDT"
-
-                ]
-            }
-        ]
-
         self.times_response = responses.add(
             responses.GET,
             upstream_endpoint.format(self.times_file),
@@ -42,20 +60,6 @@ class LiveOceanDrifterForecastModelTests(TestCase):
             status=200,
             content_type='application/json'
         )
-
-        expected_tracks_response = [
-
-            {
-                "x": [
-                    "-122.786"
-
-                ],
-                "y": [
-                    "49.000"
-
-                ]
-            }
-        ]
 
         self.tracks_response = responses.add(
             responses.GET,
@@ -159,3 +163,23 @@ class LiveOceanDrifterForecastModelTests(TestCase):
 
         self.assertIsNone(created_forecast,
                           "Forecast should not have been created.")
+
+
+class SaveSnapshotsTests(TestCase):
+
+    def test_saves_snapshot(self):
+        """
+        correctly processes the json object of a tracks response
+        """
+
+        list_of_tracks: list[Track] = []
+
+        for track in expected_tracks_response:
+            list_of_tracks.append(Track(x=track["x"], y=track["y"]))
+
+        self.assertIsNotNone(LiveOceanDrifterForecast.objects.all())
+        save_snapshots(
+            list_of_tracks, expected_times_response[0]["t"], LiveOceanDrifterForecast.objects.first())
+
+        count = DrifterSnapshot.objects.all().count()
+        self.assertEqual(count, 0)

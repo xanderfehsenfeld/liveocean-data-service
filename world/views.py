@@ -3,70 +3,73 @@ from datetime import datetime
 from django.http import JsonResponse, HttpResponse, Http404
 from django.core.serializers import serialize
 from django.shortcuts import get_object_or_404
-from .models import LiveOceanDrifterForecast
+from .models import DrifterSnapshot, Feature, FeatureCollection, FeatureProperties, GeometryPoint, LiveOceanDrifterForecast, Track
 import requests
-
-# def worldborder_list(request):
-#     """List WorldBorder objects.
-
-#     Query params:
-#     - format=geojson to return GeoJSON (Content-Type: application/geo+json)
-#     - limit, offset for simple pagination
-#     """
-#     fmt = request.GET.get('format', 'json').lower()
-#     limit = request.GET.get('limit')
-#     offset = request.GET.get('offset', 0)
-#     qs = WorldBorder.objects.all().order_by('id')
-#     # apply simple slicing if provided
-#     if limit:
-#         try:
-#             limit = int(limit)
-#             offset = int(offset)
-#             qs = qs[offset:offset + limit]
-#         except ValueError:
-#             pass
-
-#     if fmt == 'geojson':
-#         geojson = serialize('geojson', qs, geometry_field='mpoly', fields=('name', 'area', 'pop2005', 'iso2', 'iso3', 'lon', 'lat'))
-#         return HttpResponse(geojson, content_type='application/geo+json')
-
-#     # default JSON response with selected fields
-#     data = []
-#     for o in qs:
-#         data.append({
-#             'id': o.id,
-#             'name': o.name,
-#             'area': o.area,
-#             'pop2005': o.pop2005,
-#             'iso2': o.iso2,
-#             'iso3': o.iso3,
-#             'lon': o.lon,
-#             'lat': o.lat,
-#         })
-
-#     return JsonResponse({'count': WorldBorder.objects.count(), 'results': data})
+from django.contrib.gis.db import models
 
 
-# def worldborder_detail(request, pk):
-#     """Retrieve a single WorldBorder by primary key."""
-#     fmt = request.GET.get('format', 'json').lower()
-#     obj = get_object_or_404(WorldBorder, pk=pk)
+# ---------------------------------------------------------------------------
+# Core logic  (direct translation of getPoints)
+# ---------------------------------------------------------------------------
 
-#     if fmt == 'geojson':
-#         geo = serialize('geojson', [obj], geometry_field='mpoly', fields=('name', 'area', 'pop2005', 'iso2', 'iso3', 'lon', 'lat'))
-#         return HttpResponse(geo, content_type='application/geo+json')
+def get_points(tracks: list[Track]) -> list[FeatureCollection]:
+    """
+    For every time-step index, build a FeatureCollection that contains one
+    Point Feature per drifter track.
+    """
+    if not tracks or not tracks[0].x:
+        return []
 
-#     data = {
-#         'id': obj.id,
-#         'name': obj.name,
-#         'area': obj.area,
-#         'pop2005': obj.pop2005,
-#         'iso2': obj.iso2,
-#         'iso3': obj.iso3,
-#         'lon': obj.lon,
-#         'lat': obj.lat,
-#     }
-#     return JsonResponse(data)
+    result: list[FeatureCollection] = []
+
+    for time_index in range(len(tracks[0].x)):
+        features: list[Feature] = []
+
+        for drifter_id, track in enumerate(tracks):
+            latitude = track.y[time_index]
+            longitude = track.x[time_index]
+
+            features.append(
+                Feature(
+                    type="Feature",
+                    properties=FeatureProperties(
+                        latitude=latitude,
+                        longitude=longitude,
+                        id=str(drifter_id),
+                    ),
+                    geometry=GeometryPoint(
+                        type="Point",
+                        coordinates=(longitude, latitude),
+                    ),
+                )
+            )
+
+        result.append(FeatureCollection(
+            type="FeatureCollection", features=features))
+
+    return result
+
+
+# ---------------------------------------------------------------------------
+# Example: bulk-create snapshots from raw track data
+# ---------------------------------------------------------------------------
+
+
+def save_snapshots(tracks: list[Track], times: list[str], forecast_id:  models.ForeignKey[LiveOceanDrifterForecast]) -> list[DrifterSnapshot]:
+    """
+    Convert raw Track data all the way to persisted DrifterSnapshot rows.
+
+    Usage::
+
+        tracks = [Track(x=[...], y=[...]), ...]
+        snapshots = save_snapshots(tracks)
+    """
+    feature_collections = get_points(tracks)
+    snapshots = [
+        DrifterSnapshot.from_feature_collection(i, fc, times[i])
+        for i, fc in enumerate(feature_collections)
+    ]
+    return DrifterSnapshot.objects.bulk_create(snapshots)
 
 
 def forecast_drifters(request, tracks_filename, times_filename):
