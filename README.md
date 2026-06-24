@@ -71,7 +71,11 @@ find . -name '*.py' | entr -c uv run --env-file=.env python manage.py test
 ### Regenerate fixture data. Usually only necessary after changing database schema
 
 ```shell
-uv run --env-file=.env python manage.py dumpdata --natural-foreign --natural-primary  > world/fixtures/one-forecast.json
+uv run --env-file=.env python manage.py dumpdata \
+    --indent=4 \
+    --natural-foreign \
+    --natural-primary \
+    > world/fixtures/one-forecast.json
 ```
 
 ## Helpful resources
