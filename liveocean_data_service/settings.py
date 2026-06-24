@@ -140,13 +140,9 @@ WSGI_APPLICATION = 'liveocean_data_service.wsgi.application'
 # [START cloudrun_django_database_config]
 # Use django-environ to parse the connection string
 DATABASES = {
-
-
     "default":
     env.db(engine='django.contrib.gis.db.backends.postgis')
 }
-
-print(DATABASES['default']["ENGINE"])
 
 
 # If the flag as been set, configure to use proxy
