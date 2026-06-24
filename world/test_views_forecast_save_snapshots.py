@@ -47,11 +47,14 @@ class SaveSnapshotsTests(TestCase):
 
         self.drifter_forecast.times = expected_times_response
         self.drifter_forecast.drifters_forecast = expected_tracks_response
+        DrifterSnapshot.objects.all().delete()
 
     def test_saves_snapshot(self):
         """
         correctly processes the json object of a tracks response
         """
+
+        self.assertEqual(self.drifter_forecast.times, expected_times_response)
 
         save_snapshots(
             self.drifter_forecast

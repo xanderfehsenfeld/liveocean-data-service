@@ -142,6 +142,7 @@ class DrifterSnapshot(models.Model):
     locations = models.MultiPointField(
         srid=4326,
         help_text="WGS-84 MultiPoint: one point per drifter at this time-step.",
+        geography=True
     )
     drifter_ids = models.JSONField(
         default=list,
