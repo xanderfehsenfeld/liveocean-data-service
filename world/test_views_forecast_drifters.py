@@ -14,6 +14,17 @@ from .models import DrifterSnapshot, LiveOceanDrifterForecast, Track
 import mock
 
 
+def after_response(a):
+    pass
+
+
+def noop(a, b, c):
+    pass
+
+
+noop.after_response = after_response
+
+
 expected_times_response = [
     {
         "t": [
@@ -39,6 +50,7 @@ expected_tracks_response = [
 ]
 
 
+@mock.patch('world.views.save_snapshots', noop)
 class LiveOceanDrifterForecastViewTests(TestCase):
 
     fixtures = ["one-forecast.json"]

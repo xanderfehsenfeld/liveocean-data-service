@@ -76,6 +76,15 @@ wheels = [
 ]
 
 [[package]]
+name = "django-after-response"
+version = "0.2.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/77/57/e11acc0db3e35cd4d9c7838e8b55cb0435c35aefc6786d63ce9e32034229/django-after-response-0.2.2.tar.gz", hash = "sha256:fc6966cd1b07428c725cc8c824dc549e4f42b616b199eef9218c2ae48bfca4e2", size = 1915, upload-time = "2016-01-29T19:20:01.997Z" }
+
+[[package]]
 name = "idna"
 version = "3.18"
 source = { registry = "https://pypi.org/simple" }
@@ -90,6 +99,7 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "django" },
+    { name = "django-after-response" },
     { name = "mock" },
     { name = "psycopg2-binary" },
     { name = "python-dotenv" },
@@ -100,6 +110,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "django", specifier = ">=6.0.6" },
+    { name = "django-after-response", specifier = ">=0.2.2" },
     { name = "mock", specifier = ">=5.2.0" },
     { name = "psycopg2-binary", specifier = ">=2.9.12" },
     { name = "python-dotenv", specifier = ">=1.2.2" },

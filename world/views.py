@@ -6,6 +6,7 @@ from django.shortcuts import get_object_or_404
 from .models import DrifterSnapshot, Feature, FeatureCollection, FeatureProperties, GeometryPoint, LiveOceanDrifterForecast, Track
 import requests
 from django.contrib.gis.db import models
+import after_response
 
 
 def get_points(tracks: list[Track]) -> list[FeatureCollection]:
@@ -49,8 +50,8 @@ def get_points(tracks: list[Track]) -> list[FeatureCollection]:
 # ---------------------------------------------------------------------------
 # Example: bulk-create snapshots from raw track data
 # ---------------------------------------------------------------------------
-
-def save_snapshots(forecast:  LiveOceanDrifterForecast) -> list[DrifterSnapshot]:
+@after_response.enable
+def save_snapshots(forecast:  LiveOceanDrifterForecast):
     """
     Convert raw Track data all the way to persisted DrifterSnapshot rows.
 
@@ -80,8 +81,25 @@ def save_snapshots(forecast:  LiveOceanDrifterForecast) -> list[DrifterSnapshot]
 
                                                unique_fields=[
                                                    "time_index", "forecast_id"]
-
                                                )
+
+
+def snapshots(request, tracks_filename, times_filename):
+    current_date = datetime.now().date()
+
+    matching_forecast = get_object_or_404(LiveOceanDrifterForecast,
+                                          date_of_query=current_date,
+
+                                          tracks_filename=tracks_filename)
+
+    result = DrifterSnapshot.objects.filter(
+        forecast_id=matching_forecast)
+
+    result_as_list: list[dict] = []
+    for snapshot in result:
+        result_as_list.append(snapshot.toJSON())
+
+    return JsonResponse(result_as_list, safe=False)
 
 
 def forecast_drifters(request, tracks_filename, times_filename):
@@ -110,5 +128,6 @@ def forecast_drifters(request, tracks_filename, times_filename):
         )
 
         result.save()
+        save_snapshots.after_response(result)
 
     return JsonResponse(result.toJSON(), safe=False)

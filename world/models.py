@@ -10,6 +10,8 @@ from typing import Literal
 
 from zoneinfo import ZoneInfo
 
+import json
+
 
 class WorldBorder(models.Model):
     # Regular Django fields corresponding to the attributes in the
@@ -196,3 +198,10 @@ class DrifterSnapshot(models.Model):
             for i, pt in enumerate(self.locations)
         ]
         return FeatureCollection(features=features)
+
+    def toJSON(self):
+
+        locations: MultiPoint = self.locations
+        model_as_dict = model_to_dict(self, exclude=["locations"])
+        model_as_dict["locations"] = json.loads(locations.geojson)
+        return model_as_dict
