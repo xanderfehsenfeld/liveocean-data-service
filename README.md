@@ -5,29 +5,34 @@ Application and database to fetch, transform, store, and serve data from Univers
 ## Prerequisites
 
 - `uv` [python package manager](https://github.com/astral-sh/uv)
-- `docker`
+- Either
+  - `docker` if you want to run the database locally
+  - `cloud-sql-proxy` if you want to proxy to a google cloud sql instance.
 
 ## Setup/install
 
 1. Create a file `.env` in root with the following structure. Replace the variable values:
 
 ```shell
-POSTGRES_USER=admin
+POSTGRES_USER=<username>
 POSTGRES_PW=<password>
 POSTGRES_DB=pg4django
 PGADMIN_MAIL=<email>
 PGADMIN_PW=<admin password>
 
 
-PG_USER=admin
+PG_USER=<username>
 PG_PSWD=<password>
 PG_DB_NAME=pg4django
 PG_HOST_DEV=0.0.0.0  # cannot be pg host when run django within docker
 PG_HOST=0.0.0.0 # local ip for postgres
 PG_PORT=5432
+
+SECRET_KEY=<A secret key for the django app>
+DATABASE_URL=postgres://<username>:<password>@//cloudsql/<google cloud sql endpoint>
 ```
 
-2. `docker compose up` to start the database service, and wait for it to finish starting.
+2. `docker compose up` to start the database service, and wait for it to finish starting. OR start the Cloud Sql proxy: `cloud-sql-proxy <google cloud project id>:<region>:<cloud sql instance name>`.
 3. `uv sync` to install python packages.
 4. `uv run --env-file=.env python manage.py migrate` to apply migrations.
 
