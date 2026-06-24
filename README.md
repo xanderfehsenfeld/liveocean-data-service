@@ -27,8 +27,9 @@ PG_HOST=0.0.0.0 # local ip for postgres
 PG_PORT=5432
 ```
 
-2. Run `docker compose up` to start the database service
-3. Run `uv sync` to install python packages
+2. `docker compose up` to start the database service, and wait for it to finish starting.
+3. `uv sync` to install python packages.
+4. `uv run --env-file=.env python manage.py migrate` to apply migrations.
 
 ## Run
 
@@ -43,6 +44,25 @@ Dockerized Postgres + PostGIS
 ## Service
 
 Django + GeoDjango
+
+## Development and helpful scripts
+
+### Run tests
+
+```shell
+#Run tests
+uv run --env-file=.env python manage.py test
+
+#Run and watch tests with entr
+
+find . -name '*.py' | entr -c uv run --env-file=.env python manage.py test
+```
+
+### Regenerate fixture data. Usually only necessary after changing database schema
+
+```shell
+uv run --env-file=.env python manage.py dumpdata --natural-foreign --natural-primary  > world/fixtures/one-forecast.json
+```
 
 ## Helpful resources
 
