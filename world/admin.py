@@ -1,6 +1,6 @@
 from django.contrib import admin
 
 from django.contrib.gis import admin
-from .models import WorldBorder
+from .models import LiveOceanDrifterForecast, Drifter, DrifterSnapshot
 
-admin.site.register(WorldBorder, admin.ModelAdmin)
+admin.site.register(LiveOceanDrifterForecast, admin.ModelAdmin)
