@@ -14,9 +14,9 @@
 
 # [START cloudrun_django_cloudmigrate_yaml_python]
 steps:
-  - id: "Build Container Image"
-    name: gcr.io/k8s-skaffold/pack
-    args: ["build", "${_IMAGE_NAME}", "--builder=gcr.io/buildpacks/builder"]
+  # - id: "Build Container Image"
+  #   name: gcr.io/k8s-skaffold/pack
+  #   args: ["build", "${_IMAGE_NAME}", "--builder=gcr.io/buildpacks/builder"]
 
   - id: "Push Container Image"
     name: "gcr.io/cloud-builders/docker"
