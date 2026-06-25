@@ -30,9 +30,19 @@ PG_PORT=5432
 2. Run `docker compose up` to start the database service
 3. Run `uv sync` to install python packages
 
-## Run
+## Run development server in docker container
 
-`uv run --env-file=.env python manage.py runserver`
+Run the following command to build and run the docker container. May take awhile on the first time to build.
+
+`docker run -p 8080:8080 --rm -it $(docker build -q .)`
+
+## Run in local environment
+
+After ensuring the database is instance is up and running, run the following commands:
+
+1. This command is only needed on first run or if a migration is needed: `uv run --env-file=.env python manage.py migrate`
+
+2. Run the development server `uv run --env-file=.env python manage.py runserver`
 
 # Implementation details
 
