@@ -1,6 +1,6 @@
 services:
-  postgres:
-    container_name: postgis
+  db:
+    container_name: postgres-database
     image: postgis/postgis:15-3.3
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
@@ -12,14 +12,21 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/19/docker
 
-  pgadmin:
-    container_name: pgadmin
-    image: dpage/pgadmin4:latest
-    environment:
-      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_MAIL}
-      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_PW}
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: gis-api
+    depends_on:
+      db:
+        condition: service_started
+    command: uv run --env-file=.env python manage.py runserver 0.0.0.0:1024
     ports:
-      - "5050:80"
+      - "1024:1024"
+    volumes:
+      - ./:/app/
+    env_file:
+      - ./.env
     restart: always
 
 volumes:
