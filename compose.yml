@@ -1,27 +1,41 @@
 services:
-  postgres:
-    container_name: postgis
-    image: postgis/postgis:latest
+  db:
+    image: postgis/postgis:14-3.5
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PW=${POSTGRES_PW}
       - POSTGRES_PASSWORD=${POSTGRES_PW}
       - POSTGRES_DB=${POSTGRES_DB}
+      # - PGDATA=/var/lib/postgresql/data
     ports:
       - "5432:5432"
-    restart: always
     volumes:
-      - pgdata:/var/lib/postgresql/19/docker
-
-  pgadmin:
-    container_name: pgadmin
-    image: dpage/pgadmin4:latest
-    environment:
-      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_MAIL}
-      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_PW}
-    ports:
-      - "5050:80"
+      - postgis-data:/var/lib/postgresql/data
     restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${PG_DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  web:
+    build: .
+    command: uv run python manage.py runserver 0.0.0.0:8080
+    volumes:
+      - .:/app
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PG_HOST_DEV: db
+      PG_HOST: db
+      DATABASE_USER: ${POSTGRES_USER}
+      POSTGRES_PW: ${POSTGRES_PW}
+      PG_PSWD: ${POSTGRES_PW}
+      PG_USER: ${POSTGRES_USER}
+      PG_DB_NAME: ${PG_DB_NAME}
 
 volumes:
-  pgdata:
-    driver: local
+  dbbackups:
+  postgis-data:
