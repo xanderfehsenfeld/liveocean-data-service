@@ -1,34 +1,35 @@
 services:
   db:
-    container_name: postgres-database
     image: postgis/postgis:15-3.3
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PW=${POSTGRES_PW}
       - POSTGRES_PASSWORD=${POSTGRES_PW}
       - POSTGRES_DB=${POSTGRES_DB}
     ports:
       - "5432:5432"
-    restart: always
     volumes:
       - pgdata:/var/lib/postgresql/19/docker
-
-  api:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: gis-api
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${PG_DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  web:
+    build: .
+    command: uv run python manage.py runserver
+    volumes:
+      - .:/app
+    ports:
+      - "8080:8080"
     depends_on:
       db:
-        condition: service_started
-    command: uv run --env-file=.env python manage.py runserver 0.0.0.0:1024
-    ports:
-      - "1024:1024"
-    volumes:
-      - ./:/app/
-    env_file:
-      - ./.env
-    restart: always
+        condition: service_healthy
+    environment:
+      PG_HOST_DEV: db
+      PG_HOST: db
+      DATABASE_USER: ${POSTGRES_USER}
+      POSTGRES_PW: ${POSTGRES_PW}
 
 volumes:
   pgdata:
-    driver: local
