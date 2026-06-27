@@ -1,15 +1,17 @@
 services:
   db:
-    image: postgis/postgis:15-3.3
+    image: postgis/postgis:14-3.5
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PW=${POSTGRES_PW}
       - POSTGRES_PASSWORD=${POSTGRES_PW}
       - POSTGRES_DB=${POSTGRES_DB}
+      # - PGDATA=/var/lib/postgresql/data
     ports:
       - "5432:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/19/docker
+      - postgis-data:/var/lib/postgresql/data
+    restart: always
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${PG_DB_NAME}"]
       interval: 10s
@@ -35,4 +37,5 @@ services:
       PG_DB_NAME: ${PG_DB_NAME}
 
 volumes:
-  pgdata:
+  dbbackups:
+  postgis-data:
