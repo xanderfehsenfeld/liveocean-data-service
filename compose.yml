@@ -17,7 +17,7 @@ services:
       retries: 5
   web:
     build: .
-    command: uv run python manage.py runserver
+    command: uv run python manage.py runserver 0.0.0.0:8080
     volumes:
       - .:/app
     ports:
@@ -30,6 +30,9 @@ services:
       PG_HOST: db
       DATABASE_USER: ${POSTGRES_USER}
       POSTGRES_PW: ${POSTGRES_PW}
+      PG_PSWD: ${POSTGRES_PW}
+      PG_USER: ${POSTGRES_USER}
+      PG_DB_NAME: ${PG_DB_NAME}
 
 volumes:
   pgdata:
