@@ -14,9 +14,9 @@
 
 # [START cloudrun_django_cloudmigrate_yaml_python]
 steps:
-  # - id: "Build Container Image"
-  #   name: gcr.io/k8s-skaffold/pack
-  #   args: ["build", "${_IMAGE_NAME}", "--builder=gcr.io/buildpacks/builder"]
+  - id: "Build Container Image"
+    name: "gcr.io/cloud-builders/docker"
+    args: ["build", "-t", "${_IMAGE_NAME}", "."]
 
   - id: "Push Container Image"
     name: "gcr.io/cloud-builders/docker"
@@ -33,7 +33,7 @@ steps:
           --image ${_IMAGE_NAME} \
           --set-cloudsql-instances ${_CLOUD_SQL_CONNECTION_NAME} \
           --set-env-vars SETTINGS_NAME=${_SECRET_SETTINGS_NAME} \
-          --command migrate \
+          --command "uv run python manage.py migrate && python manage.py collectstatic --verbosity 2 --no-input" \
           --execute-now
 
   - id: "Create superuser"
@@ -49,7 +49,7 @@ steps:
           --set-env-vars SETTINGS_NAME=${_SECRET_SETTINGS_NAME} \
           --set-env-vars DJANGO_SUPERUSER_EMAIL=${_ADMIN_EMAIL} \
           --set-secrets DJANGO_SUPERUSER_PASSWORD=${_ADMIN_PASSWORD_NAME}:latest \
-          --command createsuperuser \
+          --command "uv run python manage.py createsuperuser --username admin --noinput || echo 'User already exists.'" \
           --execute-now
 
 options:

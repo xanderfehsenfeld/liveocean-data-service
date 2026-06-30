@@ -1,5 +1,5 @@
 # Default entrypoint: run Django
-web: uv run gunicorn --bind 0.0.0.0:$PORT --workers 1 --threads 8 --timeout 0 liveocean_data_service.wsgi:application
+web: uv run gunicorn --bind 0.0.0.0:$PORT --workers 1 --threads 8 --timeout 0 mysite.wsgi:application
 
 # [START cloudrun_django_procfile_migrate]
 # Apply database migrations

@@ -22,19 +22,15 @@ COPY . /app
 # Disable development dependencies
 ENV UV_NO_DEV=1
 
-RUN apt-get update -qq \
-    && apt-get upgrade -qq \
-    && apt-get install -qq build-essential \
-    wget \
-    unzip   && \
-    apt-get install libpq-dev \
-    binutils \
-    libproj-dev \
-    gdal-bin -qq  
+# Setup GDAL
+RUN apt-get update && \
+    apt-get install -y binutils libproj-dev gdal-bin python3-gdal && \
+    rm -rf /var/lib/apt/lists/*
 
 
 # Sync the project into a new environment, asserting the lockfile is up to date
 WORKDIR /app
 RUN uv sync --locked
 
-CMD ["uv", "run", "--env-file=.env", "python", "manage.py", "runserver", "0.0.0.0:8080"]
+
+CMD [ "sh", "./entrypoint.sh"]
